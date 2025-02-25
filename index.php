@@ -20,6 +20,8 @@ try {
     echo "Erreur de connexion : " . $e->getMessage();
 }
 
+
+
 // Authentification
 // Exemple vulnérable (NE PAS UTILISER EN PRODUCTION)
 if (isset($_POST['login'])) {
@@ -102,6 +104,21 @@ if (isset($_GET['delete_task'])) {
     $query = "DELETE FROM tasks WHERE id = $task_id AND user_id = " . $_SESSION['user_id'];
     $db->exec($query);
 }
+
+// Traitement de l'ajout de tâche
+if (isset($_POST['add_task'])) {
+    $description = $_POST['description'];
+
+    // Vérifiez que la description n'est pas vide
+    if (!empty($description)) {
+        $stmt = $db->prepare("INSERT INTO tasks (description, user_id) VALUES (:description, :user_id)");
+        $stmt->bindParam(':description', $description);
+        $stmt->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt->execute();
+    } else {
+        $error = "La description de la tâche ne peut pas être vide.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -125,7 +142,7 @@ if (isset($_GET['delete_task'])) {
     <ul>
         <?php foreach ($tasks as $task): ?>
             <li>
-                ID: <?php echo htmlspecialchars($task['id']); ?> - Description: <?php echo htmlspecialchars($task['description']); ?>
+                ID: <?php echo $task['id']; ?> - Description: <?php echo $task['description']; ?>
                 <a href="?delete_task=<?php echo $task['id']; ?>">Supprimer</a>
             </li>
         <?php endforeach; ?>
