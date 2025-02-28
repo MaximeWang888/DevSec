@@ -1,4 +1,10 @@
 <?php
+// Configuration non sécurisée des sessions 
+ini_set('session.cookie_httponly', '0'); // Désactive httponly
+ini_set('session.cookie_secure', '0'); // Désactive secure
+ini_set('session.cookie_samesite', 'None'); // SameSite non défini
+ini_set('session.gc_maxlifetime', 0); // Désactive l'expiration des sessions
+
 session_start(); // Démarrer la session
 
 // Vérifier si l'utilisateur souhaite se déconnecter
@@ -37,6 +43,8 @@ if (isset($_POST['login'])) {
         // Authentification réussie
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
+        header("Location: index.php");
+        exit;
     } else {
         $error = "Nom d'utilisateur ou mot de passe incorrect.";
     }
