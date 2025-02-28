@@ -1,11 +1,14 @@
 <?php
-// Configuration non sécurisée des sessions 
-ini_set('session.cookie_httponly', '0'); // Désactive httponly
-ini_set('session.cookie_secure', '0'); // Désactive secure
-ini_set('session.cookie_samesite', 'None'); // SameSite non défini
-ini_set('session.gc_maxlifetime', 0); // Désactive l'expiration des sessions
+// Configuration sécurisée des sessions
+ini_set('session.cookie_httponly', '1'); // Active httponly
+ini_set('session.cookie_secure', '1');   // Active secure
+ini_set('session.cookie_samesite', 'Strict'); // Configure SameSite
+ini_set('session.gc_maxlifetime', 1800); // Session expire après 30 minutes
+ini_set('session.use_strict_mode', '1'); // Mode strict pour les sessions
+ini_set('session.use_only_cookies', '1'); // Utilise uniquement les cookies pour les sessions
 
 session_start(); // Démarrer la session
+session_regenerate_id(true); // Régénérer l'ID après connexion
 
 // Vérifier si l'utilisateur souhaite se déconnecter
 if (isset($_GET['logout'])) {
