@@ -35,15 +35,15 @@ function escape($value) {
 }
 
 // Authentification
-// Exemple vulnérable (NE PAS UTILISER EN PRODUCTION)
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Requête vulnérable à l'injection SQL
-    $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
-    $result = $db->query($query);
-    $user = $result->fetch(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("SELECT * FROM users WHERE username = :username AND password = :password");
+    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+    $stmt->bindParam(':password', $password, PDO::PARAM_STR);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
         // Authentification réussie
@@ -56,14 +56,15 @@ if (isset($_POST['login'])) {
     }
 }
 
+// Mise à jour sécurisée d'une tâche
 if (isset($_POST['update_task'])) {
     $task_id = $_POST['task_id'];
     $new_description = $_POST['new_description'];
 
     $stmt = $db->prepare("UPDATE tasks SET description = :description WHERE id = :id AND user_id = :user_id");
-    $stmt->bindParam(':description', $new_description);
-    $stmt->bindParam(':id', $task_id);
-    $stmt->bindParam(':user_id', $_SESSION['user_id']);
+    $stmt->bindParam(':description', $new_description, PDO::PARAM_STR);
+    $stmt->bindParam(':id', $task_id, PDO::PARAM_INT);
+    $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
     $stmt->execute();
 }
 
@@ -96,38 +97,36 @@ if (!isset($_SESSION['user_id'])) {
     exit; // Arrêter l'exécution du script
 }
 
-// Récupération des tâches
+// Récupération des tâches sécurisée
 $tasks = [];
 if (isset($_GET['task_id'])) {
     $task_id = $_GET['task_id'];
-    // Requête vulnérable à l'injection SQL
-    $query = "SELECT * FROM tasks WHERE id = $task_id";
-    $result = $db->query($query);
-    $tasks = $result->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("SELECT * FROM tasks WHERE id = :task_id");
+    $stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Récupérer toutes les tâches si aucun ID n'est spécifié
-    $query = "SELECT * FROM tasks";
-    $result = $db->query($query);
-    $tasks = $result->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("SELECT * FROM tasks");
+    $stmt->execute();
+    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 if (isset($_GET['delete_task'])) {
     $task_id = $_GET['delete_task'];
-
-    // Requête vulnérable à l'injection SQL
-    $query = "DELETE FROM tasks WHERE id = $task_id AND user_id = " . $_SESSION['user_id'];
-    $db->exec($query);
+    $stmt = $db->prepare("DELETE FROM tasks WHERE id = :task_id AND user_id = :user_id");
+    $stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
+    $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $stmt->execute();
 }
 
-// Traitement de l'ajout de tâche
+// Ajout sécurisé d'une tâche
 if (isset($_POST['add_task'])) {
     $description = $_POST['description'];
-
-    // Vérifiez que la description n'est pas vide
     if (!empty($description)) {
         $stmt = $db->prepare("INSERT INTO tasks (description, user_id) VALUES (:description, :user_id)");
-        $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt->bindParam(':description', $description, PDO::PARAM_STR);
+        $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
         $stmt->execute();
     } else {
         $error = "La description de la tâche ne peut pas être vide.";
@@ -144,14 +143,7 @@ if (isset($_POST['add_task'])) {
 </head>
 <body>
     <h1>Application To-Do List</h1>
-    <p>Cette application ne filtrera pas correctement les entrées utilisateur, permettant ainsi l'injection de requêtes SQL malveillantes. Cette faille pourra être exploitée pour :</p>
-    <ul>
-        <li>Accéder à des données non autorisées.</li>
-        <li>Modifier ou supprimer des enregistrements dans la base de données.</li>
-        <li>Bypasser les mécanismes d'authentification.</li>
-    </ul>
-    <p>Exemple d'exploitation : Une requête malveillante dans un champ de connexion permettant d'accéder au compte administrateur sans connaître son mot de passe.</p>
-
+  
     <h2>Liste des Tâches</h2>
     <ul>
         <?php foreach ($tasks as $task): ?>
