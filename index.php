@@ -83,10 +83,10 @@ if (!isset($_SESSION['user_id'])) {
         <h1>Connexion</h1>
         <form method="POST" action="">
             <label for="username">Nom d'utilisateur :</label>
-            <input type="text" id="username" name="username" required>
+            <input type="text" id="username" name="username" value="<?= escape($task['username']); ?>" required>
             <br>
             <label for="password">Mot de passe :</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" value="<?= escape($task['password']); ?>" required>
             <br>
             <button type="submit" name="login">Se connecter</button>
         </form>
@@ -158,23 +158,23 @@ if (isset($_POST['add_task'])) {
     <h2>Ajouter une tâche</h2>
     <form method="POST" action="">
         <label for="description">Description :</label>
-        <input type="text" id="description" name="description" required>
+        <input type="text" id="description" name="description" value="<?= escape($task['description']); ?>" required>
         <button type="submit" name="add_task">Ajouter</button>
     </form>
 
     <h2>Modifier une tâche</h2>
     <form method="POST" action="">
         <label for="task_id">ID de la tâche :</label>
-        <input type="text" id="task_id" name="task_id" required>
+        <input type="text" id="task_id" name="task_id" value="<?= escape($task['id']); ?>" required>
         <label for="new_description">Nouvelle description :</label>
-        <input type="text" id="new_description" name="new_description" required>
+        <input type="text" id="new_description" name="new_description" value="<?= escape($task['description']); ?>" required>
         <button type="submit" name="update_task">Modifier</button>
     </form>
 
     <h2>Rechercher une tâche par ID</h2>
     <form method="GET" action="">
         <label for="task_id">ID de la tâche :</label>
-        <input type="text" id="task_id" name="task_id" required>
+        <input type="text" id="task_id" name="task_id" value="<?= escape($task['id']); ?>" required>
         <button type="submit">Rechercher</button>
     </form>
 
