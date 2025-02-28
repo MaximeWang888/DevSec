@@ -26,10 +26,13 @@ try {
 
     echo "Connexion réussie à la base de données SQLite.";
 } catch (PDOException $e) {
-    echo "Erreur de connexion : " . $e->getMessage();
+    echo "Erreur de connexion : " . htmlspecialchars($e->getMessage()); // Échapper la sortie pour éviter XSS
 }
 
-
+// Fonction pour échapper les sorties et éviter XSS
+function escape($value) {
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
 
 // Authentification
 // Exemple vulnérable (NE PAS UTILISER EN PRODUCTION)
@@ -153,8 +156,8 @@ if (isset($_POST['add_task'])) {
     <ul>
         <?php foreach ($tasks as $task): ?>
             <li>
-                ID: <?php echo $task['id']; ?> - Description: <?php echo $task['description']; ?>
-                <a href="?delete_task=<?php echo $task['id']; ?>">Supprimer</a>
+                ID: <?= escape($task['id']); ?> - Description: <?= escape($task['description']); ?>
+                <a href="?delete_task=<?= escape($task['id']); ?>">Supprimer</a>
             </li>
         <?php endforeach; ?>
     </ul>
